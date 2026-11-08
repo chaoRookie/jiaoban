@@ -1,0 +1,222 @@
+<title>交班加固</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=ZCOOL+XiaoWei&family=Noto+Serif+SC:wght@400;600&family=Cormorant+Garamond:ital@1&family=JetBrains+Mono&display=swap">
+<style>
+:root{color-scheme:light;--paper:#F9F4E8;--ink:#211C1C;--ink-2:#5C5650;--ink-3:#6F6961;--line:#DDD6C4;--c:#6B2D1E;--f-t:"ZCOOL XiaoWei","Songti SC",serif;--f-b:"Noto Serif SC","Songti SC",serif;--f-e:"Cormorant Garamond",Georgia,serif;--f-m:"JetBrains Mono",ui-monospace,Menlo,monospace}
+/*@include:motion.css*/
+/*@include:buttons.css*/
+*{box-sizing:border-box}
+body{background-color:var(--paper);background-image:url(__ASSET:paper/xuan_fiber.webp__),url(__ASSET:paper/xuan_cloud.webp__);background-size:768px,1181px;background-blend-mode:multiply,multiply}
+body{margin:0;color:var(--ink-2);font-family:var(--f-b);font-size:16.5px;line-height:1.9;padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));overflow-x:clip}
+.w{max-width:60rem;margin:0 auto}
+.t{font-family:var(--f-m);font-size:.74rem;color:var(--ink-3);letter-spacing:.04em}
+h1{font-family:var(--f-t);font-weight:400;font-size:1.3rem;margin:.2rem 0 0;letter-spacing:.14em;color:var(--ink)}
+h2{font-family:var(--f-t);font-weight:400;font-size:1.08rem;letter-spacing:.14em;color:var(--ink);margin:0 0 1rem}
+b{font-weight:400;color:var(--ink)}
+a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--ink-3)}
+code{font-family:var(--f-m);font-size:.82em;color:var(--ink)}
+.en{font-family:var(--f-e);font-style:italic;font-size:1.1rem;color:var(--ink-2)}
+header{padding-block:3.2rem 0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1rem;align-items:end}
+header canvas{width:min(300px,100%);height:auto;justify-self:end}
+section{padding-block:56px 0}
+section p{margin:0 0 1.2em;max-width:34rem}
+.pp{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,3fr);column-gap:64px}
+.pp>*{min-width:0}
+.pi{font-size:.8rem;line-height:1.75;color:var(--ink-3)}
+.big{font-size:1.06rem;color:var(--ink)}
+.tb{width:100%;border-collapse:collapse;font-size:.88rem;line-height:1.7;margin:.4rem 0 1.4rem}
+.tb th{font-family:var(--f-m);font-weight:400;font-size:.72rem;color:var(--ink-3);text-align:left;padding:.3rem .8rem .3rem 0;border-bottom:2px solid var(--ink)}
+.tb td{padding:.55rem .8rem .55rem 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink)}
+.tb td.s{color:var(--ink-2);font-size:.82rem}
+.tb .n{font-family:var(--f-m);font-size:.84rem;white-space:nowrap}
+.tb tr.key td:first-child{border-left:4px solid var(--c);padding-left:.6rem}
+.mk{font-family:var(--f-m);font-size:.8rem;color:var(--ink);margin-right:.35rem}
+.ex{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.2rem 2rem;margin:.6rem 0 1.4rem}
+.ex>div{min-width:0}
+.ex .h{font-family:var(--f-m);font-size:.72rem;color:var(--ink-3);margin-bottom:.3rem}
+.ex pre{margin:0;font-family:var(--f-m);font-size:.76rem;line-height:1.75;white-space:pre-wrap;word-break:break-word;color:var(--ink);padding:.6rem 0 .6rem .9rem;border-left:2px solid var(--ink)}
+.ex .bad pre{border-left:2px dashed var(--ink-3);color:var(--ink-2);text-decoration:line-through;text-decoration-color:var(--ink-3)}
+ul.ls{margin:0 0 1.2rem;padding:0;list-style:none;max-width:40rem}
+ul.ls li{padding:.35rem 0 .35rem 1.3rem;position:relative;font-size:.92rem;color:var(--ink)}
+ul.ls li::before{content:"";position:absolute;left:0;top:1.05em;width:.55rem;height:3px;background:var(--ink)}
+ul.ls.no li{color:var(--ink-2)}
+ul.ls.no li::before{background:none;border-top:2px dashed var(--ink-3);height:0}
+.ask{border-left:4px solid var(--c);padding:.2rem 0 .2rem 1rem;margin:0 0 1.2rem;max-width:40rem}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+button{font:inherit;color:inherit;background:none;border:0;border-radius:0;padding:0;margin:0;cursor:pointer;touch-action:manipulation}
+button:focus-visible,a:focus-visible{outline:1px dotted var(--ink);outline-offset:3px}
+canvas{display:block}
+[hidden]{display:none!important}
+.mate{position:fixed;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(10px + env(safe-area-inset-bottom,0px));width:56px;height:56px;image-rendering:pixelated;pointer-events:none;z-index:7}
+.swim{position:fixed;left:0;bottom:calc(8px + env(safe-area-inset-bottom,0px));width:96px;height:80px;image-rendering:pixelated;pointer-events:none;z-index:5}
+.swim.on{pointer-events:auto;cursor:pointer}
+footer{margin-top:5rem;padding-block:1.1rem 3rem;border-top:1px solid var(--line);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2rem;align-items:end}
+footer .n a{display:flex;gap:.8rem;font-size:.86rem;padding:.25rem 0;border:0}
+footer .n span{font-size:.74rem;color:var(--ink-3);min-width:2.6em}
+footer .m{font-family:var(--f-m);font-size:.7rem;color:var(--ink-3);line-height:1.8;margin-top:1rem}
+footer .up{margin-top:.5rem}
+.k{display:flex;gap:.55rem;align-items:flex-end}
+.v{writing-mode:vertical-rl;font-size:.84rem;letter-spacing:.3em;color:var(--ink)}
+.seal{position:relative;width:2.3rem;height:2.3rem;min-height:0;background:var(--c);text-align:center;color:var(--paper);font-family:var(--f-t);font-size:.82rem;line-height:1.05;display:grid;grid-template-columns:1fr 1fr;place-items:center;padding:.2rem;transform:rotate(-1.5deg)}
+@media (max-width:640px){header{grid-template-columns:1fr}header canvas{justify-self:start;width:230px}.pp{display:block}.pi{border-left:1px solid var(--ink);padding-left:.8rem;margin:0 0 1.5em}.ex{grid-template-columns:1fr}.tb{font-size:.82rem}.tb.st thead{display:none}.tb.st tr{display:block;border-bottom:1px solid var(--line);padding:.5rem 0}.tb.st td{display:block;border:0;padding:.1rem 0}.tb.st td[data-l]::before{content:attr(data-l)"　";font-family:var(--f-m);font-size:.7rem;color:var(--ink-3)}.tb.st tr.key{border-left:4px solid var(--c);padding-left:.6rem}.tb.st tr.key td:first-child{border-left:0;padding-left:0}footer{gap:1rem}}
+</style>
+
+<div class="w">
+<header id="first">
+  <div>
+    <div class="t">二〇二六年十一月八日　交班　第子签</div>
+    <h1>交班，压短了再交</h1>
+    <div class="en">Short context, long memory</div>
+  </div>
+  <canvas id="sign" width="600" height="420" role="img" aria-label="三列：第一列一根越堆越高的墨条；第二列三根中等的墨条，每根顶上一个点传到下一根；第三列一排很短的墨条，每根都传一个点"></canvas>
+</header>
+
+<section data-t="答问">
+  <h2>到阈值压一次，最划算</h2>
+  <div class="pp">
+    <div>
+      <p class="big">只看前沿模型、把用量算进去：EoCC（到阈值压一次）最好。SAC（每步一换）正确率不更高，论文也没给它花了多少 token。</p>
+    </div>
+    <div class="pi">数字来自论文表 2 和附录 C 的表 3。正确率是解出的题目百分比。</div>
+  </div>
+  <div class="scroll">
+  <table class="tb st">
+    <thead><tr><th>方式</th><th>Opus SWE-bench</th><th>Opus Terminal</th><th>GPT SWE-bench</th><th>GPT Terminal</th><th>单次上下文中位</th><th>token 花费</th></tr></thead>
+    <tbody>
+      <tr><td>不压缩（FHA）</td><td class="n" data-l="Opus SWE-bench">70.0</td><td class="n" data-l="Opus Terminal">47.2</td><td class="n" data-l="GPT SWE-bench">84.4</td><td class="n" data-l="GPT Terminal">87.6</td><td class="n" data-l="单次上下文中位">17–32K</td><td class="s" data-l="token 花费">基线</td></tr>
+      <tr class="key"><td><b>到阈值压一次（EoCC）</b>　最高</td><td class="n" data-l="Opus SWE-bench">74.8</td><td class="n" data-l="Opus Terminal">52.8</td><td class="n" data-l="GPT SWE-bench">88.8</td><td class="n" data-l="GPT Terminal">88.8</td><td class="n" data-l="单次上下文中位">19–24K</td><td class="s" data-l="token 花费">放宽到 48K/36K 时，一题平均只压 0.3 到 0.9 次，花费和基线差不多</td></tr>
+      <tr><td>每步一换（SAC）</td><td class="n" data-l="Opus SWE-bench">70.2</td><td class="n" data-l="Opus Terminal">51.8</td><td class="n" data-l="GPT SWE-bench">82.4</td><td class="n" data-l="GPT Terminal">84.3</td><td class="n" data-l="单次上下文中位">7–9K</td><td class="s" data-l="token 花费">论文没给。每一步都要重发任务、再写一遍状态，输出又是最贵的那种 token，小克推测只会更多</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="pp">
+    <div>
+      <p>按今天统一的标价，压缩不一定省钱：SWE-bench Verified 上 Opus 便宜约 10% 到 30%，GPT 反而贵约 10% 到 21%。论文标题里那 2.2 到 8.8 倍，是假设厂商按上下文长短定价的估算。所以对你来说，压缩换来的是正确率不掉、会话不糊涂，钱基本打平。</p>
+      <p><b>关于 DeepSeek Flash：</b>论文没测它，它的跑分小克没核实。论文里有一组对照值得记：Step 3.7 Flash 和 Opus 4.5 不压缩时 SWE-bench 都是 70.0，压到 16K 上限时一个掉到 56.6，一个还有 68.8。跑分一样高，经不经得起压缩是两回事。所以给它派活，阈值放宽、任务切小。</p>
+      <p><b>小克上次说错一处：</b>Qwen 3 Coder Next 从 53.0 掉到 3.6，原因不是它不会写总结。论文写的是它输出太啰嗦，两次压缩之间留不出空间干活。</p>
+    </div>
+    <div class="pi">表里「单次上下文」是一次调用里最大的那段对话。EoCC 取的是每格最好的那组设置：Opus 是 24K/18K 和 32K/24K，GPT 是 48K/36K。</div>
+  </div>
+</section>
+
+<section data-t="改了什么">
+  <h2>规则改了这六处</h2>
+  <div class="scroll">
+  <table class="tb st">
+    <thead><tr><th>规则</th><th>改前</th><th>改后</th><th>论文依据</th></tr></thead>
+    <tbody>
+      <tr class="key"><td>交接的写法</td><td class="s" data-l="改前">写结论、没做完的、下一步</td><td data-l="改后">写给下一个人的简报：只挑接着干要用的事实，不写经过</td><td class="s" data-l="依据">附录 A：最好的压缩不是复述经过，而是为接下来挑事实；普通摘要会把重复的片段看得太重</td></tr>
+      <tr><td>任务原文</td><td class="s" data-l="改前">没有</td><td data-l="改后">每份交接照抄原话，不转述上一份的转述</td><td class="s" data-l="依据">附录 A 第 1 条；§3.1：压缩的压缩丢得更多</td></tr>
+      <tr><td>交接字段</td><td class="s" data-l="改前">6 个必填</td><td data-l="改后">10 个必填，2 个选填，<code>jiaoban close</code> 检查</td><td class="s" data-l="依据">附录 G 的压缩提示词：目标、事实、改动、验证、死路、剩下的计划和完成条件</td></tr>
+      <tr><td>原始记录</td><td class="s" data-l="改前">没写</td><td data-l="改后">git、会话记录、日志都不删；交接里写指针，要时按需翻；开工也只按需读</td><td class="s" data-l="依据">§3.1：留着每条原始记录、按需取回；§4：按需读比整份塞进去更准</td></tr>
+      <tr><td>什么时候交接</td><td class="s" data-l="改前">收工时</td><td data-l="改后">收工时；会话被自动压缩过一次或已经很长时，也先写一份</td><td class="s" data-l="依据">§2.4.1：到阈值就压，给写状态留余量</td></tr>
+      <tr><td>派给弱模型</td><td class="s" data-l="改前">没写</td><td data-l="改后">任务切小，输出要窄，阈值放宽</td><td class="s" data-l="依据">附录 D：弱模型压得越紧掉得越多</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section data-t="交接字段">
+  <h2>一份交接现在长这样</h2>
+  <div class="pp">
+    <div>
+      <p><span class="mk">●</span>原有　<span class="mk">◆</span>新加的必填　<span class="mk">○</span>选填</p>
+      <p style="color:var(--ink)"><span class="mk">●</span>工号　<span class="mk">●</span>事　<span class="mk">◆</span>任务原文　<span class="mk">●</span>结论（验证过的和猜的分开）　<span class="mk">●</span>改了哪些文件　<span class="mk">◆</span>怎么验的　<span class="mk">◆</span>走不通的　<span class="mk">●</span>没做完的　<span class="mk">●</span>下一步（第一条具体命令）　<span class="mk">◆</span>完成标准　<span class="mk">○</span>肥肥交代的　<span class="mk">○</span>去哪查</p>
+    </div>
+    <div class="pi">旧格式的交接拿去 <code>close</code>，会报「交接缺字段：任务原文、怎么验的、走不通的、完成标准」，不让交班。小克在临时仓库里实测过：旧格式退出码 1，新格式 0。</div>
+  </div>
+  <div class="ex">
+    <div class="bad"><div class="h">流水账（划掉）</div><pre>先看了 config，发现路径不对，试了相对路径不行，又试了绝对路径，然后跑测试……</pre></div>
+    <div><div class="h">简报</div><pre>结论: 路径改成从仓库根算的绝对路径，测试 41 个全过（已验证）
+走不通的: 相对路径，换工作目录就断
+下一步: 跑 make deploy
+完成标准: deploy 后首页返回 200</pre></div>
+  </div>
+</section>
+
+<section data-t="同步">
+  <h2>改到了哪里</h2>
+  <div class="pp">
+    <div>
+      <ul class="ls">
+        <li>全局规则 <code>~/.claude/CLAUDE.md</code>「会话即员工」一节</li>
+        <li>交班技能 <code>~/.claude/skills/jiaoban</code>，GitHub 私有仓库 <a href="https://github.com/chaoRookie/jiaoban">chaoRookie/jiaoban</a></li>
+        <li><code>jiaoban</code> 工具：必填字段、新项目的规则模板、现状卡多打一行「走不通的」。源码搬进了技能仓库，原路径变成链接，从此有版本记录</li>
+        <li>两台 Mac 的 Codex 和 DeepSeek Harness：规则、工具、技能都同步过去了</li>
+        <li>量化公司：项目 CLAUDE.md 的交班规则、设计稿里两处字段表、项目记忆</li>
+      </ul>
+      <p><b>顺手修了一个旧漏洞：</b>同步脚本把「称呼与语气」整节换成固定的语气说明，「会话即员工」这些规则就在那一节底下，所以 Codex 和 DeepSeek Harness 一直没收到交班规则。现在只换语气那几行，底下的规则照常同步。</p>
+    </div>
+    <div>
+      <div class="pi" style="margin-bottom:.6rem">没动的：</div>
+      <ul class="ls no">
+        <li>Kaggle Gemma 项目，照旧用它自己的交接和 <code>loop.py check</code></li>
+        <li>已经写好的旧交接，不回头改</li>
+        <li>MacBook 上没有用 jiaoban 的项目</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section data-t="要你定">
+  <h2>要你定的一件事</h2>
+  <div class="ask">
+    <p class="big">仓库要不要公开？现在是私有的。</p>
+    <p>公开：和解剖、肥肥主义一样，别人能直接装来用；README 有中英两版，里面没有密钥、地址和账号。不公开：只有你看得到，以后随时能改成公开。</p>
+    <p>小克倾向公开：这套做法本身没有私事，论文撑着，放出去才有人用。顾虑是工具里有几句提示写着「问肥肥」，别人用时会看到你的名字。</p>
+  </div>
+</section>
+
+<section data-t="出处">
+  <h2>出处</h2>
+  <p class="pi" style="max-width:none">Belcak 等，《You don't need long context》，arXiv 2611.05306，NVIDIA，2026-11-03：<a href="https://arxiv.org/abs/2611.05306">arxiv.org/abs/2611.05306</a>。数字从原文 PDF 抄出，逐条带页码的版本在仓库 <code>jiaoban/references/paper.md</code>。论文测的是 Opus 4.5 和 GPT 5.6 Sol 在基准上的单次任务，不是和人来回的长会话；结论能借，数字不能直接搬。</p>
+</section>
+
+<footer data-shake>
+  <div>
+    <div class="n"><a href="https://github.com/chaoRookie/jiaoban"><span>仓库</span>chaoRookie/jiaoban</a><a href="https://arxiv.org/abs/2611.05306"><span>论文</span>You don't need long context</a></div>
+    <div class="m">2026-11-08　第 1 版<br>源文件 jiaoban/SKILL.md、jiaoban/references/paper.md</div>
+    <button class="up k4" id="up" type="button" data-top>回到题记</button>
+  </div>
+  <div class="k"><div class="v">肥肥 记</div><button class="seal" id="seal" type="button" data-stamp aria-label="肥肥的印"><span>肥</span><span>肥</span><span>主</span><span>义</span></button></div>
+</footer>
+</div>
+
+<canvas class="mate" id="mate" width="64" height="64" hidden aria-hidden="true"></canvas>
+<canvas class="swim" id="swim" width="128" height="102" hidden aria-hidden="true"></canvas>
+
+<script>
+/*@include:motion.js*/
+FF.ready.then(T=>{
+ const cv=document.getElementById('sign'),y=cv.getContext('2d');
+ const main=getComputedStyle(document.documentElement).getPropertyValue('--c').trim();
+ const base=380,ink='#211C1C';
+ const cols=[
+  {x:90,bars:[[0,330]],w:40},
+  {x:300,bars:[[0,170],[0,170],[0,170]],w:26,gap:52},
+  {x:500,bars:[[0,46],[0,46],[0,46],[0,46],[0,46],[0,46],[0,46]],w:10,gap:22}
+ ];
+ function bar(x,h,w,p){
+  const hh=h*p;
+  if(T.pale&&T.pale.length)FF.ribbon(y,T.pale[0],FF.line([x,base],[x,base-hh],30),w,1);else{y.fillStyle=ink;y.fillRect(x-w/2,base-hh,w,hh)}
+ }
+ function dot(x,yy,r){y.beginPath();y.arc(x,yy,r,0,Math.PI*2);y.fillStyle=main;y.fill()}
+ function draw(p){
+  y.clearRect(0,0,cv.width,cv.height);
+  bar(cols[0].x,cols[0].bars[0][1],cols[0].w,p);
+  cols.slice(1).forEach((c,ci)=>{
+   const n=c.bars.length,span=(n-1)*c.gap,x0=c.x-span/2;
+   c.bars.forEach((b,i)=>{
+    const q=Math.max(0,Math.min(1,p*n-i));
+    if(q<=0)return;
+    const x=x0+i*c.gap;
+    bar(x,b[1],c.w,q);
+    if(q>=1)dot(x,base-b[1]-(ci?14:20),ci?6:10);
+   });
+  });
+ }
+ if(FF.rm)draw(1);else FF.play(cv,1800,FF.ease.pull,draw).then(()=>draw(1));
+});
+/*@include:partners.js*/
+</script>
