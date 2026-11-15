@@ -26,9 +26,9 @@ NVIDIA 的《You don't need long context》（[arXiv 2611.05306](https://arxiv.o
 |---|---|
 | `jiaoban/SKILL.md` | 给 agent 看的规则：选哪种压缩方式、开工、干活中、怎么写交接、离职、给别的模型派活 |
 | `jiaoban/references/paper.md` | 论文的数字和出处 |
-| `jiaoban/scripts/jiaoban.py` | 命令行工具，只用 Python 标准库：`init`、`brief`、`open`、`close`、`resign`、`sweep`、`snapshot` |
+| `jiaoban/scripts/jiaoban.py` | 命令行工具，只用 Python 标准库：`init`、`brief`、`open`、`close`、`resign`、`sweep`、`snapshot`、`qianren` |
 
-结构管得住的地方交给工具：`jiaoban close` 检查交接的必填字段齐全、改过的文件都已提交、项目的收工检查通过，不过就不让交班。
+结构管得住的地方交给工具：`jiaoban close` 检查交接的必填字段齐全、改过的文件都已提交、列出的设计稿有「前人做法」一节、项目的收工检查通过，不过就不让交班。
 
 交接的必填字段：工号、事、任务原文、结论、改了哪些文件、怎么验的、走不通的、没做完的、下一步、完成标准。
 
