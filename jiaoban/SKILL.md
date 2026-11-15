@@ -118,7 +118,7 @@ NVIDIA 的论文《You don't need long context》（arXiv 2611.05306，2026-11-0
 
 ## 前人做法
 
-动手前先看别人做没做过。设计稿、方案、预注册（文件路径里带 design、concept、brief、prereg、proposal、设计、方案、预注册，且不是 review、report、交接这类）要有一节标题含「前人做法」，写搜过的词、看过的项目链接、借了什么或为什么不借。`jiaoban close` 会查交接里列出的这类文件。
+动手前先看别人做没做过。设计稿、调研报告、方案、预注册要有一节标题含「前人做法」，写搜过的词、看过的项目链接、借了什么或为什么不借。哪些文件算，只看文件名：带 design、concept、brief、prereg、proposal、diaoyan、设计、方案、预注册、调研的算；review、report、交接这类，需求报告（xuqiu、需求），规范和规则（`DESIGN.md`、rules、规则、宪法）不算。`jiaoban close` 会查交接里列出的这类文件。
 
 长期项目在 `memory/prior-art.md` 记这个项目用别人的话叫什么、搜过的词、同类项目，开头写 `上次复查: YYYY-MM-DD`，有新东西写 `新发现: [...]`。现状卡会显示它，超过 14 天没复查就提醒。
 

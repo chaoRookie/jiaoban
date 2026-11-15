@@ -9,8 +9,8 @@ from pathlib import Path
 
 REQUIRED = ["工号", "事", "任务原文", "结论", "改了哪些文件", "怎么验的", "走不通的", "没做完的", "下一步", "完成标准"]
 SLUG = re.compile(r"[a-z0-9][a-z0-9-]*")
-DESIGN = re.compile(r"(design|concept|brief|prereg|proposal|设计|方案|预注册)", re.I)
-NOT_DESIGN = re.compile(r"(review|report|drift|handoff|审查|审阅|报告|交接)", re.I)
+DESIGN = re.compile(r"(design|concept|brief|prereg|proposal|diaoyan|设计|方案|预注册|调研)", re.I)
+NOT_DESIGN = re.compile(r"(review|report|drift|handoff|xuqiu|rules|审查|审阅|(?<!调研)报告|交接|需求|规则|宪法)", re.I)
 PRIOR_DAYS = 14
 GATE_MSG = """金鱼开审被拦下：要审的设计稿还没有合格的「前人做法」一节。
 {detail}
@@ -113,7 +113,9 @@ def handoffs(root):
 
 
 def is_design(rel):
-    return rel.endswith(".md") and bool(DESIGN.search(rel)) and not NOT_DESIGN.search(rel)
+    p = Path(rel)
+    name = p.name
+    return p.suffix == ".md" and name != "DESIGN.md" and p.parent.name != "handoff" and bool(DESIGN.search(name)) and not NOT_DESIGN.search(name)
 
 
 def qianren_problem(path):
