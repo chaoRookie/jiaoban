@@ -9,6 +9,13 @@ from pathlib import Path
 
 REQUIRED = ["工号", "事", "任务原文", "结论", "改了哪些文件", "怎么验的", "走不通的", "没做完的", "下一步", "完成标准"]
 SLUG = re.compile(r"[a-z0-9][a-z0-9-]*")
+DESIGN = re.compile(r"(design|concept|brief|prereg|proposal|diaoyan|设计|方案|预注册|调研)", re.I)
+NOT_DESIGN = re.compile(r"(review|report|drift|handoff|xuqiu|rules|审查|审阅|(?<!调研)报告|交接|需求|规则|宪法)", re.I)
+PRIOR_DAYS = 14
+GATE_MSG = """金鱼开审被拦下：要审的设计稿还没有合格的「前人做法」一节。
+{detail}
+先开一个能上网的子代理找现成的东西：至少用四种问法搜 GitHub、Hugging Face 和 awesome 清单（按功能的英文描述、别人可能的叫法、alternative to 已知工具、按星数排），再把搜过的词、看过的项目链接、借了什么或为什么不借，写进设计稿的「前人做法」一节，然后再开审。
+单独检查：jiaoban qianren <设计稿>"""
 BEGIN = "<!-- 交班规则 开始 -->"
 END = "<!-- 交班规则 结束 -->"
 PROTOCOL = f"""{BEGIN}
@@ -27,7 +34,9 @@ PROTOCOL = f"""{BEGIN}
 收工：
 1. 写交接 `memory/handoff/<日期>-<工号>-<事>.md`，开头是 YAML front matter，一个字段一行。必填：工号、事、任务原文（原话照抄）、结论（验证过的和猜的分开）、改了哪些文件、怎么验的、走不通的（没有就写「无」）、没做完的、下一步（第一条具体命令或改动）、完成标准。选填：肥肥交代的（这次说过的偏好和纠正）、去哪查（文件:行、提交号、命令）。交接写给下一个人用：只挑接着干要用的事实，不写经过。
 2. 把改过的文件提交进 git。
-3. 运行 `jiaoban close <工号> <事>`。它检查交接字段齐全、列出的文件已提交，通过后把这件事标成做完并提交 memory/。不通过就是没交接完。
+3. 运行 `jiaoban close <工号> <事>`。它检查交接字段齐全、列出的文件已提交、列出的设计稿和预注册有合格的「前人做法」一节（搜过的词、看过的项目链接、借不借），通过后把这件事标成做完并提交 memory/。不通过就是没交接完。单独查一份设计稿用 `jiaoban qianren <文件>`。
+
+长期项目在 `memory/prior-art.md` 记前人做法（开头写 `上次复查: YYYY-MM-DD`），现状卡会提醒超过 14 天没复查。
 
 离职（这个会话要被归档前）：运行 `jiaoban resign`。没提交的改动会自动保全到 `refs/keep/auto/<分支>`，没推到远程的 HEAD 留本地保全分支；还有该进项目的改动、或今天没写交接，就不通过，先别归档。
 
@@ -103,6 +112,99 @@ def handoffs(root):
     return sorted(d.glob("*.md")) if d.exists() else []
 
 
+def is_design(rel):
+    p = Path(rel)
+    name = p.name
+    return p.suffix == ".md" and name != "DESIGN.md" and p.parent.name != "handoff" and bool(DESIGN.search(name)) and not NOT_DESIGN.search(name)
+
+
+def qianren_problem(path):
+    lines = path.read_text(encoding="utf-8", errors="ignore").splitlines()
+    start = level = None
+    for i, l in enumerate(lines):
+        m = re.match(r"(#{1,6})\s.*前人做法", l)
+        if m:
+            start, level = i, len(m.group(1))
+            break
+    if start is None:
+        return "没有「前人做法」一节"
+    body = []
+    for l in lines[start + 1:]:
+        m = re.match(r"(#{1,6})\s", l)
+        if m and len(m.group(1)) <= level:
+            break
+        if l.strip():
+            body.append(l)
+    s = "\n".join(body)
+    miss = []
+    if not re.search(r"搜过|搜索词|关键词", s):
+        miss.append("搜过的词")
+    if not re.search(r"https?://", s) and "没找到" not in s:
+        miss.append("看过的项目链接（一个都没有就写「没找到」）")
+    if "借" not in s:
+        miss.append("借了什么或为什么不借")
+    return "「前人做法」缺：" + "、".join(miss) if miss else None
+
+
+def egm_gate():
+    try:
+        data = json.loads(sys.stdin.read() or "{}")
+    except ValueError:
+        return 0
+    ti = data.get("tool_input") or {}
+    if not str(ti.get("subagent_type", "")).startswith("egm:"):
+        return 0
+    prompt = str(ti.get("prompt", ""))
+    if "前人做法" in prompt and re.search(r"https?://", prompt):
+        return 0
+    found = []
+    for raw in dict.fromkeys(re.findall(r"(/[^\s`'\"<>()（）]+?\.md)\b", prompt)):
+        p = Path(raw)
+        if "/.claude/plugins/" in raw or not p.is_file():
+            continue
+        prob = qianren_problem(p)
+        if prob is None:
+            return 0
+        found.append(f"- {raw}：{prob}")
+    detail = "\n".join(found) if found else "- 派活说明里没有找到能检查的设计稿路径（写成绝对路径的 .md）"
+    print(GATE_MSG.format(detail=detail), file=sys.stderr)
+    return 3
+
+
+def cmd_qianren(a):
+    if a.hook:
+        return egm_gate()
+    bad = 0
+    for f in a.files:
+        p = Path(f)
+        if not p.is_file():
+            print(f"{f}：找不到")
+            bad = 1
+            continue
+        prob = qianren_problem(p)
+        print(f"{f}：{prob or '合格'}")
+        bad = bad or (prob is not None)
+    return 1 if bad else 0
+
+
+def prior_art_lines(root):
+    pa = root / "memory" / "prior-art.md"
+    if not pa.exists():
+        return ["还没有 memory/prior-art.md。长期项目建一份：这个项目用别人的话叫什么、搜过的词、同类项目和借不借；定时任务「前人做法复查」每两周按它搜一次。"]
+    fm = parse_front(pa.read_text(encoding="utf-8")) or {}
+    last = fm.get("上次复查")
+    out = []
+    try:
+        days = (now().date() - datetime.strptime(str(last), "%Y-%m-%d").date()).days
+        out.append(f"上次复查 {last}（{days} 天前）" + (f"；超过 {PRIOR_DAYS} 天了，出新方案前先复查一次" if days > PRIOR_DAYS else ""))
+    except ValueError:
+        out.append("memory/prior-art.md 开头没写「上次复查: YYYY-MM-DD」，当成没复查过")
+    news = fm.get("新发现")
+    if news and news != "无":
+        out.append(f"新发现：{'；'.join(news) if isinstance(news, list) else news}")
+    return out
+
+
 def cmd_init(a):
     root = Path(a.dir).resolve()
     (root / "memory" / "handoff").mkdir(parents=True, exist_ok=True)
@@ -163,21 +265,43 @@ def cmd_brief(a):
         for k in ("结论", "走不通的", "没做完的", "下一步"):
             if k in fm:
                 v = fm[k]
-                print(f"  {k}：{'；'.join(v) if isinstance(v, list) else v}")
+                value = "；".join(v) if isinstance(v, list) else v
+                if not a.verbose and len(value) > 160:
+                    value = value[:160].rstrip() + "…"
+                print(f"  {k}：{value}")
     if not hs:
         print("- 还没有")
+    print()
+    print("## 前人做法复查")
+    for l in prior_art_lines(root):
+        print(l)
     print()
     extra = root / "memory" / "jiaoban.json"
     if extra.exists():
         cfg = json.loads(extra.read_text(encoding="utf-8"))
-        for cmd in cfg.get("brief_extra", []):
-            print(f"## {cmd.get('title', '项目自检')}")
+        checks = cfg.get("brief_extra", [])
+        first_failure = None
+        for cmd in checks:
+            title = cmd.get("title", "项目自检")
+            if a.verbose:
+                print(f"## {title}")
             try:
                 r = subprocess.run(cmd["run"], cwd=root, shell=True, capture_output=True, text=True, timeout=120)
-                print((r.stdout or r.stderr).strip() or "（无输出）")
+                if a.verbose:
+                    print(f"退出码 {r.returncode}")
+                    print("\n".join(s.rstrip() for s in (r.stdout, r.stderr) if s.strip()) or "（无输出）", end="\n\n")
+                elif r.returncode and first_failure is None:
+                    lines = [line.strip() for line in (r.stderr + "\n" + r.stdout).splitlines() if line.strip()]
+                    failure = next((line for line in lines if re.search(r"error|fail|fatal|失败|错误", line, re.I)), None)
+                    first_failure = f"{title} 失败（退出码 {r.returncode}）：{(failure or next(iter(lines), '无输出'))[:240]}"
             except subprocess.TimeoutExpired:
-                print("超时")
-            print()
+                if a.verbose:
+                    print("超时\n")
+                elif first_failure is None:
+                    first_failure = f"{title} 超时"
+        if checks and not a.verbose:
+            print("## 项目自检")
+            print(first_failure or "通过", end="\n\n")
     ks = keeps(root)
     if ks:
         print(f"## 保全的工作（共 {len(ks)} 个，列最近 5 个；本卡只读，不会新建保全）")
@@ -258,6 +382,11 @@ def cmd_close(a):
                 problems.append(f"没进 git：{f}")
             elif git(root, "status", "--porcelain", "--", f)[1]:
                 problems.append(f"有改动没提交：{f}")
+    for f in files:
+        if is_design(f) and (root / f).is_file():
+            prob = qianren_problem(root / f)
+            if prob:
+                problems.append(f"设计稿 {f}：{prob}")
     cfg_path = root / "memory" / "jiaoban.json"
     if cfg_path.exists():
         for chk in json.loads(cfg_path.read_text(encoding="utf-8")).get("close_check", []):
@@ -419,6 +548,7 @@ def main(argv=None):
     p = sub.add_parser("brief")
     p.add_argument("--dir", default=".")
     p.add_argument("--role")
+    p.add_argument("--verbose", action="store_true", help="展开交接字段与项目自检输出")
     p.set_defaults(fn=cmd_brief)
     p = sub.add_parser("open")
     p.add_argument("worker")
@@ -442,6 +572,10 @@ def main(argv=None):
     p.add_argument("--dir", default=".")
     p.add_argument("--keep-dirty", action="store_true")
     p.set_defaults(fn=cmd_resign)
+    p = sub.add_parser("qianren")
+    p.add_argument("files", nargs="*")
+    p.add_argument("--hook", action="store_true")
+    p.set_defaults(fn=cmd_qianren)
     a = ap.parse_args(argv)
     return a.fn(a)
 

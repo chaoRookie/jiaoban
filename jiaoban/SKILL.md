@@ -1,6 +1,6 @@
 ---
 name: jiaoban
-description: 交班：把每个会话当成随时可换的员工，上下文压短，记忆写进仓库。开工读现状卡、收工写交接、会话变长要换人、归档前离职检查、给子代理或别的模型派活写任务书时使用。用户说「交班」「交接」「接手」「换个会话」「开工」「收工」「离职」「归档前检查」，或者一个会话已经很长、被自动压缩过时，都用它。依据是 NVIDIA 的论文《You don't need long context》（arXiv 2611.05306）。
+description: 说「开工」「收工」「交班」「接手」「归档前检查」时，生成现状卡、可核验的交接和明确下一步。
 ---
 
 # 交班
@@ -30,7 +30,7 @@ NVIDIA 的论文《You don't need long context》（arXiv 2611.05306，2026-11-0
 
 ## 开工
 
-1. 跑 `jiaoban brief`，读现状卡：进行中的事、最近的决定、最近三份交接、项目自检。领了岗位加 `--role <工号>`。
+1. 跑 `jiaoban brief`，读现状卡：进行中的事、最近的决定、最近三份交接、前人做法复查、项目自检。领了岗位加 `--role <工号>`。
 2. 要细节时按需去翻：`grep`、`sed -n` 看一段、`git show` 看一次提交、打开某一份旧交接。不把整份长文件、整段历史读进来。论文里按需读比整份塞进去更准，见上面的长输入任务。
 3. 接事前跑 `jiaoban open <工号> <事>`，事只用小写英文、数字和横线。
 4. 一个会话只做一件小事。
@@ -65,7 +65,7 @@ NVIDIA 的论文《You don't need long context》（arXiv 2611.05306，2026-11-0
 写完：
 
 1. 把改过的文件提交进 git。
-2. 跑 `jiaoban close <工号> <事>`。它检查必填字段齐全、列出的文件已提交、项目的收工检查通过，然后把这件事标成做完。不通过就是没交接完。
+2. 跑 `jiaoban close <工号> <事>`。它检查必填字段齐全、列出的文件已提交、列出的设计稿和预注册有合格的「前人做法」一节、项目的收工检查通过，然后把这件事标成做完。不通过就是没交接完。
 
 好的交接和流水账的差别：
 
@@ -105,20 +105,31 @@ NVIDIA 的论文《You don't need long context》（arXiv 2611.05306，2026-11-0
 | 命令 | 做什么 |
 |---|---|
 | `jiaoban init` | 新项目建 `memory/decisions.md`、`memory/work.json`、`memory/handoff/`、`roles/`，把交班规则写进 CLAUDE.md 或 AGENTS.md |
-| `jiaoban brief [--role <工号>]` | 打印现状卡 |
+| `jiaoban brief [--role <工号>] [--verbose]` | 打印现状卡；默认显示自检结论和首条失败，--verbose 展开完整交接字段与自检输出 |
 | `jiaoban open <工号> <事>` | 登记接事 |
 | `jiaoban close <工号> <事>` | 检查交接，通过后标成做完、提交 memory/ |
 | `jiaoban resign [--keep-dirty]` | 离职检查和保全 |
 | `jiaoban sweep --dir <仓库>` | 保全仓库所有工作树 |
 | `jiaoban snapshot` | 只拍一次保全快照 |
+| `jiaoban qianren <文件…>` | 检查设计稿的「前人做法」一节：搜过的词、看过的项目链接（没有就写「没找到」）、借了什么或为什么不借 |
+| `jiaoban qianren --hook` | 给 Claude Code 的 PreToolUse 钩子用：开 `egm:` 金鱼审查前，派活说明里引用的设计稿没有合格的「前人做法」就拦下 |
 
 项目自己的自检命令写进 `memory/jiaoban.json` 的 `brief_extra`；收工必须过的检查（比如全部测试）写进 `close_check`。
+
+## 前人做法
+
+动手前先看别人做没做过。设计稿、调研报告、方案、预注册要有一节标题含「前人做法」，写搜过的词、看过的项目链接、借了什么或为什么不借。哪些文件算，只看文件名：带 design、concept、brief、prereg、proposal、diaoyan、设计、方案、预注册、调研的算；review、report、交接这类，需求报告（xuqiu、需求），规范和规则（`DESIGN.md`、rules、规则、宪法）不算。`jiaoban close` 会查交接里列出的这类文件。
+
+长期项目在 `memory/prior-art.md` 记这个项目用别人的话叫什么、搜过的词、同类项目，开头写 `上次复查: YYYY-MM-DD`，有新东西写 `新发现: [...]`。现状卡会显示它，超过 14 天没复查就提醒。
 
 ## 哪些靠结构管住，哪些只靠提示词
 
 | 规则 | 怎么管 |
 |---|---|
 | 必填字段齐全、改过的文件已提交、收工检查通过 | `jiaoban close` 检查，不过不让交班 |
+| 设计稿有「前人做法」 | `jiaoban close` 检查；金鱼开审前由钩子 `jiaoban qianren --hook` 检查 |
+| 前人做法定期复查 | 现状卡显示上次复查日期，超过 14 天提醒；复查本身由定时任务做 |
+| 搜够多种问法、不两次就下「没有现成」的结论 | 只靠提示词 |
 | 离职前保全、今天有交接 | `jiaoban resign` 检查 |
 | 会话变长先写交接 | 只靠提示词 |
 | 交接写简报不写流水账、开工按需读 | 只靠提示词 |

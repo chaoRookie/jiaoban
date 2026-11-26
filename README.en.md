@@ -26,9 +26,9 @@ Every rule in the skill maps to a section of the paper. Numbers and page referen
 |---|---|
 | `jiaoban/SKILL.md` | Rules for the agent (Chinese): which compaction regime to use, starting work, mid-session, writing a handoff, resigning, delegating to other models |
 | `jiaoban/references/paper.md` | Numbers and sources from the paper |
-| `jiaoban/scripts/jiaoban.py` | Standard-library Python CLI: `init`, `brief`, `open`, `close`, `resign`, `sweep`, `snapshot` |
+| `jiaoban/scripts/jiaoban.py` | Standard-library Python CLI: `init`, `brief`, `open`, `close`, `resign`, `sweep`, `snapshot`, `qianren` |
 
-What a tool can enforce, the tool enforces: `jiaoban close` refuses to close a task unless the handoff has every required field, the listed files are committed and the project's close checks pass.
+What a tool can enforce, the tool enforces: `jiaoban close` refuses to close a task unless the handoff has every required field, the listed files are committed, every listed design doc has a prior-art section (「前人做法」: queries searched, projects looked at, what was borrowed or why not) and the project's close checks pass.
 
 ## Install
 
