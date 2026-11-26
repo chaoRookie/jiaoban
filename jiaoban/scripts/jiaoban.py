@@ -265,7 +265,10 @@ def cmd_brief(a):
         for k in ("结论", "走不通的", "没做完的", "下一步"):
             if k in fm:
                 v = fm[k]
-                print(f"  {k}：{'；'.join(v) if isinstance(v, list) else v}")
+                value = "；".join(v) if isinstance(v, list) else v
+                if not a.verbose and len(value) > 160:
+                    value = value[:160].rstrip() + "…"
+                print(f"  {k}：{value}")
     if not hs:
         print("- 还没有")
     print()
@@ -276,14 +279,29 @@ def cmd_brief(a):
     extra = root / "memory" / "jiaoban.json"
     if extra.exists():
         cfg = json.loads(extra.read_text(encoding="utf-8"))
-        for cmd in cfg.get("brief_extra", []):
-            print(f"## {cmd.get('title', '项目自检')}")
+        checks = cfg.get("brief_extra", [])
+        first_failure = None
+        for cmd in checks:
+            title = cmd.get("title", "项目自检")
+            if a.verbose:
+                print(f"## {title}")
             try:
                 r = subprocess.run(cmd["run"], cwd=root, shell=True, capture_output=True, text=True, timeout=120)
-                print((r.stdout or r.stderr).strip() or "（无输出）")
+                if a.verbose:
+                    print(f"退出码 {r.returncode}")
+                    print("\n".join(s.rstrip() for s in (r.stdout, r.stderr) if s.strip()) or "（无输出）", end="\n\n")
+                elif r.returncode and first_failure is None:
+                    lines = [line.strip() for line in (r.stderr + "\n" + r.stdout).splitlines() if line.strip()]
+                    failure = next((line for line in lines if re.search(r"error|fail|fatal|失败|错误", line, re.I)), None)
+                    first_failure = f"{title} 失败（退出码 {r.returncode}）：{(failure or next(iter(lines), '无输出'))[:240]}"
             except subprocess.TimeoutExpired:
-                print("超时")
-            print()
+                if a.verbose:
+                    print("超时\n")
+                elif first_failure is None:
+                    first_failure = f"{title} 超时"
+        if checks and not a.verbose:
+            print("## 项目自检")
+            print(first_failure or "通过", end="\n\n")
     ks = keeps(root)
     if ks:
         print(f"## 保全的工作（共 {len(ks)} 个，列最近 5 个；本卡只读，不会新建保全）")
@@ -530,6 +548,7 @@ def main(argv=None):
     p = sub.add_parser("brief")
     p.add_argument("--dir", default=".")
     p.add_argument("--role")
+    p.add_argument("--verbose", action="store_true", help="展开交接字段与项目自检输出")
     p.set_defaults(fn=cmd_brief)
     p = sub.add_parser("open")
     p.add_argument("worker")

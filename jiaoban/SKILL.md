@@ -1,6 +1,6 @@
 ---
 name: jiaoban
-description: 交班：把每个会话当成随时可换的员工，上下文压短，记忆写进仓库。开工读现状卡、收工写交接、会话变长要换人、归档前离职检查、给子代理或别的模型派活写任务书时使用。用户说「交班」「交接」「接手」「换个会话」「开工」「收工」「离职」「归档前检查」，或者一个会话已经很长、被自动压缩过时，都用它。依据是 NVIDIA 的论文《You don't need long context》（arXiv 2611.05306）。
+description: 说「开工」「收工」「交班」「接手」「归档前检查」时，生成现状卡、可核验的交接和明确下一步。
 ---
 
 # 交班
@@ -105,7 +105,7 @@ NVIDIA 的论文《You don't need long context》（arXiv 2611.05306，2026-11-0
 | 命令 | 做什么 |
 |---|---|
 | `jiaoban init` | 新项目建 `memory/decisions.md`、`memory/work.json`、`memory/handoff/`、`roles/`，把交班规则写进 CLAUDE.md 或 AGENTS.md |
-| `jiaoban brief [--role <工号>]` | 打印现状卡 |
+| `jiaoban brief [--role <工号>] [--verbose]` | 打印现状卡；默认显示自检结论和首条失败，--verbose 展开完整交接字段与自检输出 |
 | `jiaoban open <工号> <事>` | 登记接事 |
 | `jiaoban close <工号> <事>` | 检查交接，通过后标成做完、提交 memory/ |
 | `jiaoban resign [--keep-dirty]` | 离职检查和保全 |
